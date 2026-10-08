@@ -36,7 +36,7 @@ while reader.has_next():
         kp.append([c.kp for c in m.motor_cmd[:29]])
 
 if not tc:
-    sys.exit('No hay mensajes en /lowcmd. Comprueba que el ejemplo corria mientras grababas.')
+    sys.exit('No hay mensajes en /lowcmd. Comprueba que el ejemplo corre mientras grabas.')
 
 ts, qs = np.array(ts), np.array(qs)
 tc, qc, kp = np.array(tc), np.array(qc), np.array(kp)
@@ -66,16 +66,25 @@ filas.sort(reverse=True)
 
 print(f"Ventana: {t_ini:.1f}-{min(t_fin, t[-1]+t0-t0):.1f} s | {len(t)} comandos | umbral de establecimiento: {umbral} deg")
 print(f"{'articulacion':<16}{'RMS (deg)':>10}{'max (deg)':>11}{'t_estab (s)':>13}")
-for rms, mx, tset, j in filas[:10]:
+for rms, mx, tset, j in filas:
     ts_txt = 'no asienta' if np.isnan(tset) else f"{tset:.2f}"
     print(f"{NOMBRES[j]:<16}{rms:>10.2f}{mx:>11.2f}{ts_txt:>13}")
 
-plt.figure(figsize=(9, 5))
-for rms, mx, tset, j in filas[:5]:
-    plt.plot(t, err[:, j], label=NOMBRES[j])
-plt.axhline(umbral, color='gray', ls='--', lw=0.8); plt.axhline(-umbral, color='gray', ls='--', lw=0.8)
-plt.xlabel('tiempo (s)'); plt.ylabel('error de seguimiento (deg)')
-plt.title('Error de seguimiento, 5 articulaciones con mayor RMS'); plt.legend(); plt.grid(alpha=0.3)
+
+q_cmd = np.degrees(qc)
+q_real = np.degrees(qs[idx])
+fig, ax = plt.subplots(2, 2, figsize=(11, 7))
+m = t <= t_ini + 2.5   # solo 2,5 s para ver bien las dos curvas
+for k, nombre in enumerate(('L_ankle_pitch', 'L_ankle_roll')):
+    j = NOMBRES.index(nombre)
+    ax[0, k].plot(t[m], q_cmd[m, j], label='orden (/lowcmd)')
+    ax[0, k].plot(t[m], q_real[m, j], label='real (/lowstate)')
+    ax[0, k].set_title(nombre); ax[0, k].set_ylabel('posicion (deg)')
+    ax[0, k].legend(); ax[0, k].grid(alpha=0.3)
+    ax[1, k].plot(t, err[:, j], color='tab:red')
+    ax[1, k].set_ylabel('error (deg)'); ax[1, k].set_xlabel('tiempo (s)')
+    ax[1, k].grid(alpha=0.3)
+fig.suptitle('Orden vs posicion real, tobillo izquierdo')
 out = bag + '_seguimiento.png'
 plt.savefig(out, dpi=130, bbox_inches='tight')
 print('Grafica guardada en', out)

@@ -45,3 +45,13 @@ ankle pitch ~2.75, shoulder pitch ~2.1, hip yaw ~1.8 (peak 8.4 deg).
 
 Evaluate walking with the locomotion controller, add velocity-setpoint tracking, and
 compare simulated and real data.
+
+## g1_walk_node
+Nodo de alto nivel para el G1 con LocoClient. Copiar `g1_walk_node.cpp` a
+`example/src/src/g1/high_level/` en unitree_ros2 y añadir las 4 líneas de
+`CMakeLists.txt.ejemplo` (buscar `g1_walk_node`). Uso:
+
+    ros2 run unitree_ros2_example g1_walk_node --ros-args -p vx:=0.2 -p seconds:=3.0
+
+En simulacion (unitree_mujoco) no hay servicio /api/sport: el nodo aborta con
+"Sin respuesta" (codigo -1). Con el robot real, probar solo con supervision.
